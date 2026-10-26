@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// عمل: فيلم / مسلسل / أنمي / كرتون
+model Work {
+  id             String   @id
+  sid            String   @default("") // المعرّف المصدَّر مثل anime-series-1001
+  title          String   @default("بدون اسم")
+  type           String   @default("series") // movie | series
+  category       String   @default("مسلسل") // فيلم / مسلسل / أنمي / كرتون
+  hub            String   @default("eng") // arabic | eng | anime | cartoon
+  year           String   @default("")
+  overview       String   @default("")
+  poster         String   @default("")
+  posterLocal    String   @default("")
+  backdrop       String   @default("")
+  rating         String   @default("")
+  studio         String   @default("")
+  genres         String   @default("")
+  classification String   @default("")
+  altTitle       String   @default("")
+  expSig         String   @default("")
+  added          String   @default("")
+  metaLocked     String   @default("[]") // JSON array
+  done           Boolean  @default(false)
+  sort           Int      @default(0)
+  seasons        Season[]
+  updatedAt      DateTime @updatedAt
+}
+
+model Season {
+  id        String    @id @default(cuid())
+  workId    String
+  number    Int
+  sourceUrl String    @default("")
+  work      Work      @relation(fields: [workId], references: [id], onDelete: Cascade)
+  episodes  Episode[]
+}
+
+model Episode {
+  id       String   @id @default(cuid())
+  seasonId String
+  number   Int
+  title    String   @default("")
+  season   Season   @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  servers  Server[]
+}
+
+model Server {
+  id        String  @id @default(cuid())
+  episodeId String
+  name      String  @default("")
+  url       String  @default("")
+  enabled   Boolean @default(true)
+  sort      Int     @default(0)
+  episode   Episode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+}
+
+model Setting {
+  key   String @id
+  value String
+}
+
+// صور مرفوعة من جهاز المستخدم (base64)
+model StoredImage {
+  id        String   @id
+  filename  String
+  mime      String   @default("image/jpeg")
+  data      String
+  size      Int      @default(0)
+  createdAt DateTime @default(now())
+}
